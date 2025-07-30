@@ -120,4 +120,24 @@ public interface CompletionHandler<T> {
       return "OnCompleteReplace with task '" + newTaskName + "'";
     }
   }
+
+  class OnCompleteDisable<T> implements CompletionHandler<T> {
+
+    private final Instant nextExecutionTime;
+
+    public OnCompleteDisable(Instant nextExecutionTime) {
+      this.nextExecutionTime = nextExecutionTime;
+    }
+
+    public OnCompleteDisable() {
+      this.nextExecutionTime =
+          Instant.parse("9990-12-31T23:59:59");
+    }
+
+    @Override
+    public void complete(
+        ExecutionComplete executionComplete, ExecutionOperations<T> executionOperations) {
+      executionOperations.reschedule(executionComplete, nextExecutionTime);
+    }
+  }
 }

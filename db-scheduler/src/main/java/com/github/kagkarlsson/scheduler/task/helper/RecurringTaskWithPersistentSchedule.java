@@ -47,13 +47,13 @@ public abstract class RecurringTaskWithPersistentSchedule<T extends ScheduleAndD
   @Override
   public TaskInstance<T> instance(String id) {
     throw new UnsupportedOperationException(
-        "Cannot instatiate a RecurringTaskWithPersistentSchedule without 'data' since that holds the schedule.");
+        "Cannot instantiate a RecurringTaskWithPersistentSchedule without 'data' since that holds the schedule.");
   }
 
   @Override
   public SchedulableInstance<T> schedulableInstance(String id) {
     throw new UnsupportedOperationException(
-        "Cannot instatiate a RecurringTaskWithPersistentSchedule without 'data' since that holds the schedule.");
+        "Cannot instantiate a RecurringTaskWithPersistentSchedule without 'data' since that holds the schedule.");
   }
 
   @Override

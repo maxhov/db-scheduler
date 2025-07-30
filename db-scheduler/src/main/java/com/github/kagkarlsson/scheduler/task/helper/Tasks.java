@@ -16,6 +16,8 @@ package com.github.kagkarlsson.scheduler.task.helper;
 import com.github.kagkarlsson.scheduler.Clock;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.*;
+import com.github.kagkarlsson.scheduler.task.CompletionHandler.OnCompleteDisable;
+import com.github.kagkarlsson.scheduler.task.CompletionHandler.OnCompleteRemove;
 import com.github.kagkarlsson.scheduler.task.schedule.Schedule;
 import java.time.Duration;
 import java.time.Instant;
@@ -249,6 +251,7 @@ public class Tasks {
     private final Class<T> dataClass;
     private FailureHandler<T> onFailure;
     private DeadExecutionHandler<T> onDeadExecution;
+    private CompletionHandler<T> onComplete;
     private int defaultPriority = OneTimeTask.DEFAULT_PRIORITY;
 
     public OneTimeTaskBuilder(String name, Class<T> dataClass) {
@@ -256,6 +259,7 @@ public class Tasks {
       this.dataClass = dataClass;
       this.onDeadExecution = new DeadExecutionHandler.ReviveDeadExecution<>();
       this.onFailure = new FailureHandler.OnFailureRetryLater<>(DEFAULT_RETRY_INTERVAL);
+      this.onComplete = new OnCompleteRemove<>();
     }
 
     public OneTimeTaskBuilder<T> onFailureRetryLater() {
@@ -265,6 +269,11 @@ public class Tasks {
 
     public OneTimeTaskBuilder<T> onDeadExecutionRevive() {
       this.onDeadExecution = new DeadExecutionHandler.ReviveDeadExecution<>();
+      return this;
+    }
+
+    public OneTimeTaskBuilder<T> exactlyOnce() {
+      this.onComplete = new OnCompleteDisable<>();
       return this;
     }
 
@@ -284,7 +293,8 @@ public class Tasks {
     }
 
     public OneTimeTask<T> execute(VoidExecutionHandler<T> executionHandler) {
-      return new OneTimeTask<>(name, dataClass, onFailure, onDeadExecution, defaultPriority) {
+      return new OneTimeTask<>(
+          name, dataClass, onFailure, onDeadExecution, defaultPriority, onComplete) {
         @Override
         public void executeOnce(TaskInstance<T> taskInstance, ExecutionContext executionContext) {
           executionHandler.execute(taskInstance, executionContext);

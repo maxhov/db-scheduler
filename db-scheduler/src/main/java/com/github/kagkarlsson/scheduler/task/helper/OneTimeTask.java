@@ -21,6 +21,7 @@ import java.time.Duration;
 
 public abstract class OneTimeTask<T> extends AbstractTask<T> {
   public static final int DEFAULT_PRIORITY = Priority.MEDIUM;
+  private final CompletionHandler<T> onComplete;
 
   public OneTimeTask(String name, Class<T> dataClass) {
     this(
@@ -48,7 +49,24 @@ public abstract class OneTimeTask<T> extends AbstractTask<T> {
       FailureHandler<T> failureHandler,
       DeadExecutionHandler<T> deadExecutionHandler,
       int defaultPriority) {
+    this(
+        name,
+        dataClass,
+        failureHandler,
+        deadExecutionHandler,
+        defaultPriority,
+        new OnCompleteRemove<>());
+  }
+
+  public OneTimeTask(
+      String name,
+      Class<T> dataClass,
+      FailureHandler<T> failureHandler,
+      DeadExecutionHandler<T> deadExecutionHandler,
+      int defaultPriority,
+      CompletionHandler<T> onComplete) {
     super(name, dataClass, failureHandler, deadExecutionHandler, defaultPriority);
+    this.onComplete = onComplete;
   }
 
   @Override
@@ -66,7 +84,7 @@ public abstract class OneTimeTask<T> extends AbstractTask<T> {
   public CompletionHandler<T> execute(
       TaskInstance<T> taskInstance, ExecutionContext executionContext) {
     executeOnce(taskInstance, executionContext);
-    return new OnCompleteRemove<>();
+    return onComplete;
   }
 
   public abstract void executeOnce(TaskInstance<T> taskInstance, ExecutionContext executionContext);
